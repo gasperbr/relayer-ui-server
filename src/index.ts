@@ -66,10 +66,10 @@ app.get("/api/logs", (req: Request, res: Response, next: NextFunction) => {
 
   if (!name) next(`Supply a valid "chain" query param`);
 
-  fs.readFile(`./${name}/limit-order-relayer/out.log`, 'utf8', (err, data) => {
+  fs.readFile(`../${name}/limit-order-relayer/out.log`, 'utf8', (err, data) => {
     if (err) console.log(err);
     
-    fs.readFile(`./${name}/limit-order-relayer/error.log`, 'utf8', (err2, data2) => {
+    fs.readFile(`../${name}/limit-order-relayer/error.log`, 'utf8', (err2, data2) => {
       if (err2) console.log(err2);
       res.send({
         out: data,
