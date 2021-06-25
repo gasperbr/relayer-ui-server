@@ -46,7 +46,7 @@ app.get("/api/received-orders-count", (req: Request, res: Response, next: NextFu
   const to = +req.query.to;
   const chain = +req.query.chainId;
 
-  if (!from || !to || !chain) next(`Supply "from", "to" and "chain" query params`)
+  if (!from || !to || !chain) next(`Supply "from", "to" and "chain" query params`);
 
   OrderCounterModel.find({
     date: {
@@ -82,7 +82,7 @@ app.get("/api/logs", (req: Request, res: Response, next: NextFunction) => {
 });
 
 var corsOptions = {
-  origin: '*',
+  origin: false,
   optionsSuccessStatus: 200
 };
 
