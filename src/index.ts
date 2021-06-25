@@ -81,7 +81,7 @@ app.get("/api/logs", (req: Request, res: Response, next: NextFunction) => {
 
 });
 
-var corsOptions = {
+const corsOptions = {
   origin: false,
   optionsSuccessStatus: 200
 };
