@@ -7,7 +7,7 @@ import fs from "fs";
 dotenv.config();
 
 const app = express();
-const port = 8080; // default port to listen
+const port = 80;
 
 Mongoose.connect(process.env.MONGODB_URL, {
   useNewUrlParser: true,
@@ -21,7 +21,7 @@ const OrderCounterModel = Mongoose.model<IOrderCounterModel>("orderOrderModel", 
 
 
 app.get("/api/executed-orders", (req: Request, res: Response, next: NextFunction) => {
-  
+
   const from = +req.query.from;
   const to = +req.query.to;
   const chain = +req.query.chainId;
@@ -61,14 +61,14 @@ app.get("/api/received-orders-count", (req: Request, res: Response, next: NextFu
 app.get("/api/logs", (req: Request, res: Response, next: NextFunction) => {
 
   const chain = +req.query.chainId;
-  
+
   const name = getChainName(+chain);
 
   if (!name) next(`Supply a valid "chain" query param`);
 
   fs.readFile(`../${name}/limit-order-relayer/out.log`, 'utf8', (err, data) => {
     if (err) console.log(err);
-    
+
     fs.readFile(`../${name}/limit-order-relayer/error.log`, 'utf8', (err2, data2) => {
       if (err2) console.log(err2);
       res.send({
