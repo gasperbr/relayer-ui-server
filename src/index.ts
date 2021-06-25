@@ -3,11 +3,12 @@ import dotenv from "dotenv";
 import Mongoose from "mongoose";
 import { executedOrderModel, IExecutedOrderModel, IOrderCounterModel, orderCounterModel } from "./models";
 import fs from "fs";
+import cors from 'cors';
 
 dotenv.config();
 
 const app = express();
-const port = 80;
+const port = 8080;
 
 Mongoose.connect(process.env.MONGODB_URL, {
   useNewUrlParser: true,
@@ -79,6 +80,13 @@ app.get("/api/logs", (req: Request, res: Response, next: NextFunction) => {
   })
 
 });
+
+var corsOptions = {
+  origin: '*',
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 
 app.listen( port, () => {
   console.log( `server started at http://localhost:${ port }` );
