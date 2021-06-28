@@ -4,6 +4,7 @@ import Mongoose from "mongoose";
 import { executedOrderModel, IExecutedOrderModel, IOrderCounterModel, orderCounterModel } from "./models";
 import fs from "fs";
 import cors from 'cors';
+import axios from 'axios';
 
 dotenv.config();
 
@@ -44,8 +45,43 @@ app.get("/api/executed-orders", (req: Request, res: Response, next: NextFunction
       $gte: new Date(from),
       $lt: new Date(to)
     }
-  }).then(data => {
-    res.send(data);
+  }).then(async (orders: any[]) => {
+
+    const updateArr: number[] = [];
+
+    orders.forEach((order, i) => {
+      if (order.status !== 0 || order.status !== 1) {
+        if (chain === 137) {
+          console.log('order', order);
+          updateArr.push(i);
+        }
+      }
+    })
+
+    // intentionally make the code synchronus to avoid etherscan rate limit of 5/1 sec request
+
+    try {
+
+      for (let i = 0; i < updateArr.length; i++) {
+
+        const response = await axios(`https://api.polygonscan.com/api?module=transaction&action=gettxreceiptstatus&txhash=${orders[i].txHash}&apikey=${process.env.POLYGONSCAN_API_KEY}`);
+
+        console.log(response.data);
+
+        await new Promise(r => setTimeout(() => r(undefined), 201)); // rate limit buffer
+
+        if (response.data.status === '1' && response.data.result.status !== "") {
+          orders[i].status = response.data.result.status;
+          ExecutedOrderModel.updateOne({ digest: orders[i].digest }, { status: response.data.result.status }).exec();
+        }
+
+      }
+    } catch (e) {
+      console.log(`ERROR polygonscan: ${e}`);
+    }
+
+    res.send(orders);
+
   }).catch(console.log);
 
 });
@@ -59,9 +95,9 @@ app.get("/api/received-orders-count", (req: Request, res: Response, next: NextFu
   if (!from || !to || !chain) next(`Supply "from", "to" and "chain" query params`);
 
   OrderCounterModel.find({
-    date: {
-      $gte: new Date(from),
-      $lt: new Date(to)
+    timestamp: {
+      $gte: from,
+      $lt: to
     }
   }).then(data => {
     res.send(data);
@@ -92,7 +128,7 @@ app.get("/api/logs", (req: Request, res: Response, next: NextFunction) => {
 });
 
 app.listen( port, () => {
-  console.log( `server started at http://localhost:${ port }` );
+  console.log(`server started at port ${port}`);
 } );
 
 function getChainName(chainId: number) {

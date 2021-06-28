@@ -26,10 +26,11 @@ export const executedOrderModel = new Schema({
   },
   fillAmount: String,
   txHash: String,
+  status: Number
 }, { timestamps: true });
 
 export const orderCounterModel = new Schema({
-  date: Date,
+  timestamp: Number,
   counter: Number
 })
 
