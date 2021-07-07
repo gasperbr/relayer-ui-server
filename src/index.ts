@@ -62,8 +62,6 @@ app.get("/api/executed-orders", (req: Request, res: Response, next: NextFunction
 
     const updateArr: number[] = [];
 
-    let digest;
-
     orders.forEach((order, i) => {
 
       if (order.status !== 0 || order.status !== 1) {
