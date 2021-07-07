@@ -2,9 +2,11 @@ import express, {NextFunction, Request, Response }from "express";
 import dotenv from "dotenv";
 import Mongoose from "mongoose";
 import { executedOrderModel, IExecutedOrderModel, IOrderCounterModel, orderCounterModel } from "./models";
-import fs from "fs";
 import cors from 'cors';
 import axios from 'axios';
+import https from 'https';
+import http from 'http';
+import fs from 'fs';
 
 dotenv.config();
 
@@ -20,6 +22,17 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+
+const credentials = {
+  key: fs.readFileSync('key.pem'),
+  cert: fs.readFileSync('cert.pem')
+};
+
+const httpServer = http.createServer(app);
+const httpsServer = https.createServer(credentials, app);
+
+httpServer.listen(8080);
+httpsServer.listen(443);
 
 Mongoose.connect(process.env.MONGODB_URL, {
   useNewUrlParser: true,
@@ -49,8 +62,10 @@ app.get("/api/executed-orders", (req: Request, res: Response, next: NextFunction
 
     const updateArr: number[] = [];
 
+    let digest;
+
     orders.forEach((order, i) => {
-      console.log(order.status);
+
       if (order.status !== 0 || order.status !== 1) {
         if (chain === 137) {
           updateArr.push(i);
@@ -70,7 +85,7 @@ app.get("/api/executed-orders", (req: Request, res: Response, next: NextFunction
 
         if (response.data.status === '1' && response.data.result.status !== "") {
           orders[i].status = response.data.result.status;
-          ExecutedOrderModel.updateOne({ digest: orders[i].digest }, { status: response.data.result.status }).exec();
+          ExecutedOrderModel.updateOne({ digest: orders[i].digest }, { status: +response.data.result.status }).exec().then();
         }
 
       }
@@ -125,9 +140,9 @@ app.get("/api/logs", (req: Request, res: Response, next: NextFunction) => {
 
 });
 
-app.listen( port, () => {
+/* app.listen( port, () => {
   console.log(`server started at port ${port}`);
-});
+}); */
 
 function getChainName(chainId: number) {
   if (chainId === 137) {

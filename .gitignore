@@ -3,3 +3,6 @@ dist/
 .env
 error.log
 out.log
+csr.pem
+cert.pem
+key.pem
