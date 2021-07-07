@@ -50,9 +50,9 @@ app.get("/api/executed-orders", (req: Request, res: Response, next: NextFunction
     const updateArr: number[] = [];
 
     orders.forEach((order, i) => {
+      console.log(order.status);
       if (order.status !== 0 || order.status !== 1) {
         if (chain === 137) {
-          console.log('order', order);
           updateArr.push(i);
         }
       }
@@ -65,8 +65,6 @@ app.get("/api/executed-orders", (req: Request, res: Response, next: NextFunction
       for (let i = 0; i < updateArr.length; i++) {
 
         const response = await axios(`https://api.polygonscan.com/api?module=transaction&action=gettxreceiptstatus&txhash=${orders[i].txHash}&apikey=${process.env.POLYGONSCAN_API_KEY}`);
-
-        console.log(response.data);
 
         await new Promise(r => setTimeout(() => r(undefined), 201)); // rate limit buffer
 
@@ -129,7 +127,7 @@ app.get("/api/logs", (req: Request, res: Response, next: NextFunction) => {
 
 app.listen( port, () => {
   console.log(`server started at port ${port}`);
-} );
+});
 
 function getChainName(chainId: number) {
   if (chainId === 137) {
