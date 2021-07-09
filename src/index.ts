@@ -28,11 +28,11 @@ const credentials = {
   cert: fs.readFileSync('cert.pem')
 };
 
-const httpServer = http.createServer(app);
-const httpsServer = https.createServer(credentials, app);
-
-httpServer.listen(8080);
-httpsServer.listen(443);
+// const httpServer = http.createServer(app);
+// const httpsServer = https.createServer(credentials, app);
+// 
+// httpServer.listen(8080);
+// httpsServer.listen(443);
 
 Mongoose.connect(process.env.MONGODB_URL, {
   useNewUrlParser: true,
@@ -138,9 +138,9 @@ app.get("/api/logs", (req: Request, res: Response, next: NextFunction) => {
 
 });
 
-/* app.listen( port, () => {
+app.listen(port, () => {
   console.log(`server started at port ${port}`);
-}); */
+});
 
 function getChainName(chainId: number) {
   if (chainId === 137) {
