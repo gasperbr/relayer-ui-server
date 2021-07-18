@@ -28,11 +28,11 @@ const credentials = {
   cert: fs.readFileSync('cert.pem')
 };
 
-const httpServer = http.createServer(app);
-const httpsServer = https.createServer(credentials, app);
-// 
-httpServer.listen(8080);
-httpsServer.listen(443);
+// const httpServer = http.createServer(app);
+// const httpsServer = https.createServer(credentials, app);
+//
+// httpServer.listen(8080);
+// httpsServer.listen(443);
 
 Mongoose.connect(process.env.MONGODB_URL, {
   useNewUrlParser: true,
@@ -46,7 +46,6 @@ const OrderCounterModel = Mongoose.model<IOrderCounterModel>("orderOrderModel", 
 
 
 app.get("/api/executed-orders", (req: Request, res: Response, next: NextFunction) => {
-
   const from = +req.query.from;
   const to = +req.query.to;
   const chain = +req.query.chainId;
@@ -63,8 +62,7 @@ app.get("/api/executed-orders", (req: Request, res: Response, next: NextFunction
     const updateArr: number[] = [];
 
     orders.forEach((order, i) => {
-
-      if (order.status !== 0 || order.status !== 1) {
+      if (order.status !== 0 && order.status !== 1) {
         if (chain === 137) {
           updateArr.push(i);
         }
@@ -75,18 +73,17 @@ app.get("/api/executed-orders", (req: Request, res: Response, next: NextFunction
 
     try {
 
-      for (let i = 0; i < updateArr.length; i++) {
+      for (const i of updateArr) {
 
         const response = await axios(`https://api.polygonscan.com/api?module=transaction&action=gettxreceiptstatus&txhash=${orders[i].txHash}&apikey=${process.env.POLYGONSCAN_API_KEY}`);
-
         await new Promise(r => setTimeout(() => r(undefined), 201)); // rate limit buffer
 
-        if (response.data.status === '1' && response.data.result.status !== "") {
-          orders[i].status = response.data.result.status;
-          ExecutedOrderModel.updateOne({ digest: orders[i].digest }, { status: +response.data.result.status }).exec().then();
+        if (response.data.status === '1' || response.data.status === '0') {
+          ExecutedOrderModel.updateOne({ txHash: orders[i].txHash }, { status: +response.data.result.status }).exec().then();
         }
 
       }
+
     } catch (e) {
       console.log(`ERROR polygonscan: ${e}`);
     }
@@ -138,9 +135,9 @@ app.get("/api/logs", (req: Request, res: Response, next: NextFunction) => {
 
 });
 
-/* app.listen(port, () => {
+app.listen(port, () => {
   console.log(`server started at port ${port}`);
-}); */
+});
 
 function getChainName(chainId: number) {
   if (chainId === 137) {
