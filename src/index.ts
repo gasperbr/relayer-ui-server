@@ -11,7 +11,7 @@ import fs from 'fs';
 dotenv.config();
 
 const app = express();
-const port = 8080;
+const port = 443;
 
 
 const corsOptions = {
@@ -24,15 +24,9 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 const credentials = {
-  key: fs.readFileSync('key.pem'),
-  cert: fs.readFileSync('cert.pem')
+  key: fs.readFileSync('./cert/key.pem'),
+  cert: fs.readFileSync('./cert/cert.pem'),
 };
-
-// const httpServer = http.createServer(app);
-// const httpsServer = https.createServer(credentials, app);
-//
-// httpServer.listen(8080);
-// httpsServer.listen(443);
 
 Mongoose.connect(process.env.MONGODB_URL, {
   useNewUrlParser: true,
@@ -44,6 +38,9 @@ Mongoose.connect(process.env.MONGODB_URL, {
 const ExecutedOrderModel = Mongoose.model<IExecutedOrderModel>("executedOrderModel", executedOrderModel);
 const OrderCounterModel = Mongoose.model<IOrderCounterModel>("orderOrderModel", orderCounterModel);
 
+app.use('/', (req, res, next) => {
+  res.send('looks good')
+})
 
 app.get("/api/executed-orders", (req: Request, res: Response, next: NextFunction) => {
   const from = +req.query.from;
@@ -135,8 +132,14 @@ app.get("/api/logs", (req: Request, res: Response, next: NextFunction) => {
 
 });
 
-app.listen(port, () => {
+/* app.listen(port, () => {
   console.log(`server started at port ${port}`);
+}); */
+
+const httpsServer = https.createServer(credentials, app);
+
+httpsServer.listen(port, () => {
+  console.log(`Express server listening on port ${port}`);
 });
 
 function getChainName(chainId: number) {
