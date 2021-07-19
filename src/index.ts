@@ -38,7 +38,7 @@ Mongoose.connect(process.env.MONGODB_URL, {
 const ExecutedOrderModel = Mongoose.model<IExecutedOrderModel>("executedOrderModel", executedOrderModel);
 const OrderCounterModel = Mongoose.model<IOrderCounterModel>("orderOrderModel", orderCounterModel);
 
-app.use('/', (req, res, next) => {
+app.use('/api/status', (req, res, next) => {
   res.send('looks good')
 })
 
